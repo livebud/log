@@ -69,7 +69,7 @@ func ExampleConsole() {
 	log.WithGroup("hello").Debug("world", "args", 10)
 	log.Info("hello", "planet", "world", "args", 10)
 	log.Warn("hello", "planet", "world", "args", 10)
-	log.Error("hello world", "planet", "world", "args", 10)
+	log.Error("hello world", slog.String("planet", "world"), "args", 10)
 	// Output:
 	// debug: world hello.args=10
 	// info: hello planet=world args=10

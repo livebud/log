@@ -3,9 +3,6 @@ package log
 import (
 	"fmt"
 	"log/slog"
-	"os"
-
-	"github.com/livebud/color"
 )
 
 type (
@@ -20,13 +17,6 @@ const (
 	LevelWarn  = slog.LevelWarn
 	LevelError = slog.LevelError
 )
-
-func Default() *Logger {
-	return New(Filter(LevelInfo, &Console{
-		Writer: os.Stderr,
-		Color:  color.Default(),
-	}))
-}
 
 // ParseLevel parses a string into a log level
 func ParseLevel(level string) (Level, error) {
