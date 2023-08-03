@@ -1,0 +1,12 @@
+github.com/go-logfmt/logfmt v0.6.0 h1:wGYYu3uicYdqXVgoYbvnkrPVXkuLM1p1ifugDMEdRi4=
+github.com/go-logfmt/logfmt v0.6.0/go.mod h1:WYhtIu8zTZfxdn5+rREduYbwxfcBr/Vr6KEVveWlfTs=
+github.com/livebud/color v0.0.0-20230801052524-4cf9da97cbf0 h1:ioqpbWvzvwTst9SQzS5u+9uJ5f+moTuDNQXLhrmEuhw=
+github.com/livebud/color v0.0.0-20230801052524-4cf9da97cbf0/go.mod h1:IBCW2CsRUnRuN9L42Vy9SkksJdhcnISoS+hOxa20VkU=
+github.com/livebud/color v0.0.1 h1:Be1+UeNjs0GdkegoZcXd9XKiJDdru5X/ZpwtH/9hnpk=
+github.com/livebud/color v0.0.1/go.mod h1:IBCW2CsRUnRuN9L42Vy9SkksJdhcnISoS+hOxa20VkU=
+github.com/livebud/di v0.0.0-20230801050013-d643b623b855 h1:nphyqHYtJeNz7sGZIeOTJ1ZXmrCv2p2b4xkhR1t14O0=
+github.com/livebud/di v0.0.0-20230801050013-d643b623b855/go.mod h1:cCzlt+OywDAO7th8wyoCTAjfLKPua8I5zjJQVxcXac4=
+github.com/matryer/is v1.4.1 h1:55ehd8zaGABKLXQUe2awZ99BD/PTc2ls+KV/dXphgEQ=
+github.com/matryer/is v1.4.1/go.mod h1:8I/i5uYgLzgsgEloJE1U6xx5HkBQpAZvepWuujKwMRU=
+golang.org/x/sync v0.3.0 h1:ftCYgMx6zT/asHUrPw8BLLscYtGznsLAnjq5RH9P66E=
+golang.org/x/sync v0.3.0/go.mod h1:FU7BRWz2tNW+3quACPkgCx/L+uEAv1htQ0V83Z9Rj+Y=
