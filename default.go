@@ -9,8 +9,9 @@ import (
 
 func Default() *Logger {
 	return New(Filter(LevelInfo, &Console{
-		Writer: os.Stderr,
-		Color:  color.Default(),
+		Writer:    os.Stderr,
+		Color:     color.Default(),
+		AddSource: true,
 	}))
 }
 
