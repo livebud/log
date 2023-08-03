@@ -3,6 +3,7 @@ package log_test
 import (
 	"bytes"
 	"log/slog"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -44,4 +45,16 @@ func TestMulti(t *testing.T) {
 	is.Equal(string(lines2[0]), "info: hello planet=world args=10")
 	is.Equal(string(lines2[1]), "warn: hello planet=world args=10")
 	is.Equal(string(lines2[2]), "error: hello world planet=world args=10")
+}
+
+func ExampleMulti() {
+	log := log.Multi(
+		log.Filter(log.LevelInfo, &log.Console{Writer: os.Stderr}),
+		slog.NewJSONHandler(os.Stderr, nil),
+	)
+	log.WithGroup("hello").Debug("world", "args", 10)
+	log.Info("hello", "planet", "world", "args", 10)
+	log.Warn("hello", "planet", "world", "args", 10)
+	log.Error("hello world", "planet", "world", "args", 10)
+	// Output:
 }
