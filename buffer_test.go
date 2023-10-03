@@ -8,7 +8,47 @@ import (
 	"github.com/matryer/is"
 )
 
-func TestLog(t *testing.T) {
+func TestSampleLog(t *testing.T) {
+	is := is.New(t)
+	log := log.Buffer()
+	log.Info("hello")
+	log.Info("world")
+	log.Warnf("hello %s!", "mars")
+	log.Fields(map[string]interface{}{
+		"file":   "memory_test.go",
+		"detail": "file not exist",
+	}).Field("one", "two").Errorf("%d. oh noz", 1)
+	is.Equal(len(log.Entries), 4)
+	is.Equal(log.Entries[0].Level.String(), "info")
+	is.Equal(log.Entries[0].Message, "hello")
+	is.Equal(log.Entries[1].Level.String(), "info")
+	is.Equal(log.Entries[1].Message, "world")
+	is.Equal(log.Entries[2].Level.String(), "warn")
+	is.Equal(log.Entries[2].Message, "hello mars!")
+	is.Equal(log.Entries[3].Level.String(), "error")
+	is.Equal(log.Entries[3].Message, "1. oh noz")
+	fields := log.Entries[3].Fields
+	is.Equal(len(fields), 3)
+	is.Equal(fields.Keys()[0], "detail")
+	is.Equal(fields.Get(fields.Keys()[0]), "file not exist")
+	is.Equal(fields.Keys()[1], "file")
+	is.Equal(fields.Get(fields.Keys()[1]), "memory_test.go")
+	is.Equal(fields.Keys()[2], "one")
+	is.Equal(fields.Get(fields.Keys()[2]), "two")
+}
+
+func TestErrLog(t *testing.T) {
+	is := is.New(t)
+	log := log.Buffer()
+	log.Error(errors.New("one"), "two", "three")
+	is.Equal(len(log.Entries), 1)
+	is.Equal(log.Entries[0].Level.String(), "error")
+	is.Equal(log.Entries[0].Message, "one two three")
+	fields := log.Entries[0].Fields
+	is.Equal(len(fields), 0)
+}
+
+func TestSampleHandler(t *testing.T) {
 	is := is.New(t)
 	handler := log.Buffer()
 	log := log.New(handler)
@@ -38,7 +78,7 @@ func TestLog(t *testing.T) {
 	is.Equal(fields.Get(fields.Keys()[2]), "two")
 }
 
-func TestErr(t *testing.T) {
+func TestErrHandler(t *testing.T) {
 	is := is.New(t)
 	handler := log.Buffer()
 	log := log.New(handler)

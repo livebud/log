@@ -137,10 +137,16 @@ func (l *Logger) Errorf(msg string, args ...interface{}) error {
 	return l.logf(LevelError, msg, args, nil)
 }
 
-func (l *Logger) log(level Level, args []interface{}, fields Fields) error {
-	if len(args) == 0 {
-		return nil
+func createEntry(level Level, msg string, fields Fields) *Entry {
+	return &Entry{
+		Time:    Now(),
+		Level:   level,
+		Message: msg,
+		Fields:  fields.clone(),
 	}
+}
+
+func sprint(args ...interface{}) string {
 	var msg bytes.Buffer
 	// Add spaces between the arguments
 	for argNum, arg := range args {
@@ -149,24 +155,15 @@ func (l *Logger) log(level Level, args []interface{}, fields Fields) error {
 		}
 		msg.WriteString(fmt.Sprint(arg))
 	}
-	return l.Handler.Log(&Entry{
-		Time:    Now(),
-		Level:   level,
-		Message: msg.String(),
-		Fields:  fields,
-	})
+	return msg.String()
 }
 
-func (l *Logger) logf(level Level, msg string, args []interface{}, fields Fields) error {
-	if len(args) > 0 {
-		msg = fmt.Sprintf(msg, args...)
-	}
-	return l.Handler.Log(&Entry{
-		Time:    Now(),
-		Level:   level,
-		Message: msg,
-		Fields:  fields.clone(),
-	})
+func (l *Logger) log(level Level, args []interface{}, fields Fields) error {
+	return l.Handler.Log(createEntry(level, sprint(args...), fields))
+}
+
+func (l *Logger) logf(level Level, format string, args []interface{}, fields Fields) error {
+	return l.Handler.Log(createEntry(level, fmt.Sprintf(format, args...), fields))
 }
 
 type logger interface {
