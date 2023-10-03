@@ -1,19 +1,47 @@
 package log
 
 import (
-	"context"
 	"fmt"
 	"io"
-	"log/slog"
 	"os"
-	"path"
-	"runtime"
 	"strings"
 	"sync"
 
 	"github.com/go-logfmt/logfmt"
 	"github.com/livebud/color"
 )
+
+// Debugger log
+func Debugger() Log {
+	return New(Console(color.Default(), os.Stderr))
+}
+
+// Default log
+func Default() Log {
+	return New(Filter(LevelInfo, Console(color.Default(), os.Stderr)))
+}
+
+// Parse the logger with a given filter
+func Parse(filter string) (Log, error) {
+	level, err := ParseLevel(filter)
+	if err != nil {
+		return nil, err
+	}
+	return New(Filter(level, Console(color.Default(), os.Stderr))), nil
+}
+
+// Console handler
+func Console(color color.Writer, writer io.Writer) Handler {
+	return &console{color, sync.Mutex{}, writer, prefixes(color)}
+}
+
+// console logger
+type console struct {
+	color    color.Writer
+	mu       sync.Mutex
+	writer   io.Writer
+	prefixes map[Level]string
+}
 
 // Prefixes
 func prefixes(color color.Writer) map[Level]string {
@@ -33,106 +61,72 @@ func prefixes(color color.Writer) map[Level]string {
 	}
 }
 
-// Console handler for printing logs to the terminal
-type Console struct {
-	Color     color.Writer
-	Writer    io.Writer
-	AddSource bool
-	prefixes  map[Level]string
-	mu        sync.Mutex // mu protects the writer
-	once      sync.Once  // Called once to setup defaults
-	attrs     []slog.Attr
-	groups    []string
-}
-
-var _ Handler = (*Console)(nil)
-
-// Setup defaults
-func (c *Console) setup() {
-	if c.Writer == nil {
-		c.Writer = os.Stderr
+func (c *console) format(level Level, msg string) string {
+	switch level {
+	case LevelDebug:
+		return c.color.Dim(msg)
+	case LevelInfo:
+		return c.color.Blue(msg)
+	case LevelNotice:
+		return c.color.Pink(msg)
+	case LevelWarn:
+		return c.color.Yellow(msg)
+	case LevelError:
+		return c.color.Red(msg)
+	default:
+		return ""
 	}
-	if c.Color == nil {
-		c.Color = color.Default()
-	}
-	c.prefixes = prefixes(c.Color)
 }
 
-// Enabled is always set to true. Use log.Filter to filter out log levels
-func (c *Console) Enabled(context.Context, Level) bool {
-	return true
-}
-
-func (c *Console) Handle(ctx context.Context, record slog.Record) error {
-	c.once.Do(c.setup)
+// Log implements Logger
+func (c *console) Log(entry *Entry) error {
 	// Format the message
 	msg := new(strings.Builder)
-	msg.WriteString(c.format(record.Level, c.prefixes[record.Level]) + " " + record.Message)
+	msg.WriteString(c.format(entry.Level, c.prefixes[entry.Level]) + " " + entry.Message)
+
 	// Format and log the fields
-	fields := new(strings.Builder)
-	enc := logfmt.NewEncoder(fields)
-	if record.NumAttrs() > 0 {
-		prefix := strings.Join(c.groups, ".")
-		record.Attrs(func(attr slog.Attr) bool {
-			if prefix != "" {
-				attr.Key = prefix + "." + attr.Key
-			}
-			enc.EncodeKeyval(attr.Key, attr.Value.String())
-			return true
-		})
+	if len(entry.Fields) > 0 {
+		keys := entry.Fields.Keys()
+		fields := new(strings.Builder)
+		enc := logfmt.NewEncoder(fields)
+		for _, key := range keys {
+			enc.EncodeKeyval(key, entry.Fields.Get(key))
+		}
+		enc.Reset()
+		msg.WriteString(" " + c.color.Dim(fields.String()))
 	}
-	if c.AddSource {
-		enc.EncodeKeyval("source", c.source(record.PC))
-	}
-	enc.Reset()
-	msg.WriteString(" " + c.Color.Dim(fields.String()))
 	msg.WriteString("\n")
 
 	// Write out
 	c.mu.Lock()
-	fmt.Fprint(c.Writer, msg.String())
+	fmt.Fprint(c.writer, msg.String())
 	c.mu.Unlock()
 
 	return nil
 }
 
-func (c *Console) source(pc uintptr) string {
-	fs := runtime.CallersFrames([]uintptr{pc})
-	f, _ := fs.Next()
-	return fmt.Sprintf("%s:%d", path.Base(f.File), f.Line)
-}
+// Stderr is a console log singleton that writes to stderr
+var stderr = Default()
 
-func (c *Console) WithAttrs(attrs []slog.Attr) slog.Handler {
-	return &Console{
-		Color:     c.Color,
-		Writer:    c.Writer,
-		AddSource: c.AddSource,
-		groups:    c.groups,
-		attrs:     append(append([]slog.Attr{}, c.attrs...), attrs...),
-	}
-}
-
-func (c *Console) WithGroup(group string) slog.Handler {
-	return &Console{
-		Color:     c.Color,
-		Writer:    c.Writer,
-		AddSource: c.AddSource,
-		attrs:     c.attrs,
-		groups:    append(append([]string{}, c.groups...), group),
-	}
-}
-
-func (c *Console) format(level Level, msg string) string {
-	switch level {
-	case LevelDebug:
-		return c.Color.Dim(msg)
-	case LevelInfo:
-		return c.Color.Blue(msg)
-	case LevelWarn:
-		return c.Color.Yellow(msg)
-	case LevelError:
-		return c.Color.Red(msg)
-	default:
-		return ""
-	}
-}
+var (
+	// Debug message is written to the console
+	Debug = stderr.Debug
+	// Debugf message is written to the console
+	Debugf = stderr.Debugf
+	// Info message is written to the console
+	Info = stderr.Info
+	// Infof message is written to the console
+	Infof = stderr.Infof
+	// Notice message is written to the console
+	Notice = stderr.Notice
+	// Noticef message is written to the console
+	Noticef = stderr.Noticef
+	// Warn message is written to the console
+	Warn = stderr.Warn
+	// Warnf message is written to the console
+	Warnf = stderr.Warnf
+	// Error message is written to the console
+	Error = stderr.Error
+	// Errorf message is written to the console
+	Errorf = stderr.Errorf
+)
