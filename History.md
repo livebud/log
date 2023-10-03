@@ -1,3 +1,8 @@
+# 0.0.4 / 2023-10-02
+
+- update readme
+- fix json logging
+
 # 0.0.3 / 2023-10-02
 
 - switch off log/slog for now
