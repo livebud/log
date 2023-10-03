@@ -4,7 +4,7 @@
 
 Simple logger for Go.
 
-![log](https://github.com/livebud/log/assets/170299/f520d535-99ab-4db6-915c-ef06af4fa831)
+![log](https://user-images.githubusercontent.com/170299/272141127-b7357640-0418-4739-9b4f-199662da4a1e.png)
 
 ## Features
 
