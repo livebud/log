@@ -1,3 +1,8 @@
+# 0.0.3 / 2023-10-02
+
+- switch off log/slog for now
+- add -race to tests
+
 # 0.0.2 / 2023-08-02
 
 - add source by default
