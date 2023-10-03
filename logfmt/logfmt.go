@@ -22,8 +22,8 @@ func (h *Handler) Log(entry *log.Entry) error {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	h.enc.EncodeKeyval("ts", entry.Time)
-	h.enc.EncodeKeyval("level", entry.Level.String())
-	h.enc.EncodeKeyval("message", entry.Message)
+	h.enc.EncodeKeyval("lvl", entry.Level.String())
+	h.enc.EncodeKeyval("msg", entry.Message)
 	for _, key := range keys {
 		h.enc.EncodeKeyval(key, entry.Fields.Get(key))
 	}

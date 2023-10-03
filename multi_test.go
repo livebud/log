@@ -30,10 +30,10 @@ func TestMulti(t *testing.T) {
 	log.Field("args", 10).Field("planet", "world").Error("hello world")
 	lines1 := strings.Split(strings.TrimRight(buf1.String(), "\n"), "\n")
 	is.Equal(len(lines1), 4)
-	is.Equal(string(lines1[0]), `{"time":"2023-01-01T00:00:00Z","level":"debug","msg":"hello","fields":{"args":10}}`)
-	is.Equal(string(lines1[1]), `{"time":"2023-01-01T00:00:00Z","level":"info","msg":"hello","fields":{"args":10,"planet":"world"}}`)
-	is.Equal(string(lines1[2]), `{"time":"2023-01-01T00:00:00Z","level":"warn","msg":"hello","fields":{"args":10,"planet":"world"}}`)
-	is.Equal(string(lines1[3]), `{"time":"2023-01-01T00:00:00Z","level":"error","msg":"hello world","fields":{"args":10,"planet":"world"}}`)
+	is.Equal(string(lines1[0]), `{"ts":"2023-01-01T00:00:00Z","lvl":"debug","msg":"hello","fields":{"args":10}}`)
+	is.Equal(string(lines1[1]), `{"ts":"2023-01-01T00:00:00Z","lvl":"info","msg":"hello","fields":{"args":10,"planet":"world"}}`)
+	is.Equal(string(lines1[2]), `{"ts":"2023-01-01T00:00:00Z","lvl":"warn","msg":"hello","fields":{"args":10,"planet":"world"}}`)
+	is.Equal(string(lines1[3]), `{"ts":"2023-01-01T00:00:00Z","lvl":"error","msg":"hello world","fields":{"args":10,"planet":"world"}}`)
 	lines2 := strings.Split(strings.TrimRight(buf2.String(), "\n"), "\n")
 	is.Equal(len(lines2), 3)
 	is.Equal(string(lines2[0]), "info: hello args=10 planet=world")
@@ -43,12 +43,12 @@ func TestMulti(t *testing.T) {
 
 func ExampleMulti() {
 	log := log.Multi(
-		log.Filter(log.LevelInfo, log.Console(color.Ignore(), os.Stderr)),
+		log.Filter(log.LevelDebug, log.Console(color.Default(), os.Stderr)),
 		log.Json(os.Stderr),
 	)
 	log.Debug("world", "args", 10)
-	log.Info("hello", "planet", "world", "args", 10)
-	log.Warn("hello", "planet", "world", "args", 10)
+	log.Field("planet", "world").Field("args", 10).Info("hello")
+	log.Warnf("hello %s", "world")
 	log.Error("hello world", "planet", "world", "args", 10)
 	// Output:
 }

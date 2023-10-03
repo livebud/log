@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
-	"strconv"
 	"time"
 )
 
@@ -54,40 +53,25 @@ type Log interface {
 }
 
 type Entry struct {
-	Time    time.Time `json:"time,omitempty"`
-	Level   Level     `json:"level,omitempty"`
+	Time    time.Time `json:"ts,omitempty"`
+	Level   Level     `json:"lvl,omitempty"`
 	Message string    `json:"msg,omitempty"`
 	Fields  Fields    `json:"fields,omitempty"`
 }
 
 func (e *Entry) MarshalJSON() ([]byte, error) {
-	w := new(bytes.Buffer)
-	w.WriteByte('{')
-	if !e.Time.IsZero() {
-		w.WriteString(`"time":"`)
-		w.WriteString(e.Time.Format(time.RFC3339))
-		w.WriteString(`",`)
+	type entry struct {
+		Time    string `json:"ts,omitempty"`
+		Level   string `json:"lvl,omitempty"`
+		Message string `json:"msg,omitempty"`
+		Fields  Fields `json:"fields,omitempty"`
 	}
-	if e.Level != 0 {
-		w.WriteString(`"level":"`)
-		w.WriteString(e.Level.String())
-		w.WriteString(`",`)
-	}
-	if e.Message != "" {
-		w.WriteString(`"msg":`)
-		w.WriteString(strconv.Quote(e.Message))
-		w.WriteString(`,`)
-	}
-	if len(e.Fields) > 0 {
-		w.WriteString(`"fields":`)
-		fields, err := json.Marshal(e.Fields)
-		if err != nil {
-			return nil, err
-		}
-		w.Write(fields)
-	}
-	w.WriteByte('}')
-	return w.Bytes(), nil
+	return json.Marshal(entry{
+		Time:    e.Time.Format(time.RFC3339),
+		Level:   e.Level.String(),
+		Message: e.Message,
+		Fields:  e.Fields,
+	})
 }
 
 type Handler interface {
