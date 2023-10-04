@@ -1,3 +1,8 @@
+# 0.0.5 / 2023-10-04
+
+- change signature on discard logger to be a function
+- allow the buffer to also be a logger
+
 # 0.0.4 / 2023-10-02
 
 - update readme
