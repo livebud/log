@@ -1,6 +1,9 @@
 package log
 
-var Discard = discard{}
+// Discard logger is a logger that discards all messages.
+func Discard() Log {
+	return discard{}
+}
 
 type discard struct{}
 
