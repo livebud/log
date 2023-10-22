@@ -58,16 +58,19 @@ func (m *Middleware) Middleware(next http.Handler) http.Handler {
 		ctx := context.WithValue(r.Context(), logKey, log)
 		r = r.WithContext(ctx)
 		log.Info("request")
-		metrics := httpsnoop.CaptureMetrics(next, w, r)
+		res := httpsnoop.CaptureMetrics(next, w, r)
 		log = log.Fields(Fields{
-			"status":   metrics.Code,
-			"duration": metrics.Duration,
-			"size":     metrics.Written,
+			"status":   res.Code,
+			"duration": res.Duration.Milliseconds(),
+			"size":     res.Written,
 		})
-		if metrics.Code >= 500 {
+		switch {
+		case res.Code >= 500:
 			log.Error("response")
-			return
+		case res.Code >= 400:
+			log.Warn("response")
+		default:
+			log.Info("response")
 		}
-		log.Debug("response")
 	})
 }

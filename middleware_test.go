@@ -1,11 +1,9 @@
 package log_test
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	"github.com/livebud/log"
 	"github.com/matryer/is"
@@ -48,12 +46,11 @@ func TestMiddleware(t *testing.T) {
 	is.Equal(entries[2].Message, "response")
 	fields = entries[2].Fields
 	is.Equal(len(fields), 7)
+	is.Equal(fields.Keys()[0], "duration")
 	is.Equal(fields.Get("method"), "GET")
 	is.Equal(fields.Get("url"), "http://livebud.com/docs")
 	is.Equal(fields.Get("remote_addr"), "192.0.2.1:1234")
 	is.Equal(fields.Get("request_id"), requestId)
 	is.Equal(fields.Get("status"), 200)
 	is.Equal(fields.Get("size"), int64(11))
-	is.True(fields.Get("duration").(time.Duration) > 0)
-	fmt.Println(fields.Get("duration"))
 }

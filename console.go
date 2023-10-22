@@ -12,17 +12,17 @@ import (
 )
 
 // Debugger log
-func Debugger() Log {
+func Debugger() *Logger {
 	return New(Console(color.Default(), os.Stderr))
 }
 
 // Default log
-func Default() Log {
+func Default() *Logger {
 	return New(Filter(LevelInfo, Console(color.Default(), os.Stderr)))
 }
 
 // Parse the logger with a given filter
-func Parse(filter string) (Log, error) {
+func Parse(filter string) (*Logger, error) {
 	level, err := ParseLevel(filter)
 	if err != nil {
 		return nil, err
