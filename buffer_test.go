@@ -18,16 +18,17 @@ func TestSampleLog(t *testing.T) {
 		"file":   "memory_test.go",
 		"detail": "file not exist",
 	}).Field("one", "two").Errorf("%d. oh noz", 1)
-	is.Equal(len(log.Entries), 4)
-	is.Equal(log.Entries[0].Level.String(), "info")
-	is.Equal(log.Entries[0].Message, "hello")
-	is.Equal(log.Entries[1].Level.String(), "info")
-	is.Equal(log.Entries[1].Message, "world")
-	is.Equal(log.Entries[2].Level.String(), "warn")
-	is.Equal(log.Entries[2].Message, "hello mars!")
-	is.Equal(log.Entries[3].Level.String(), "error")
-	is.Equal(log.Entries[3].Message, "1. oh noz")
-	fields := log.Entries[3].Fields
+	entries := log.Entries()
+	is.Equal(len(entries), 4)
+	is.Equal(entries[0].Level.String(), "info")
+	is.Equal(entries[0].Message, "hello")
+	is.Equal(entries[1].Level.String(), "info")
+	is.Equal(entries[1].Message, "world")
+	is.Equal(entries[2].Level.String(), "warn")
+	is.Equal(entries[2].Message, "hello mars!")
+	is.Equal(entries[3].Level.String(), "error")
+	is.Equal(entries[3].Message, "1. oh noz")
+	fields := entries[3].Fields
 	is.Equal(len(fields), 3)
 	is.Equal(fields.Keys()[0], "detail")
 	is.Equal(fields.Get(fields.Keys()[0]), "file not exist")
@@ -41,10 +42,11 @@ func TestErrLog(t *testing.T) {
 	is := is.New(t)
 	log := log.Buffer()
 	log.Error(errors.New("one"), "two", "three")
-	is.Equal(len(log.Entries), 1)
-	is.Equal(log.Entries[0].Level.String(), "error")
-	is.Equal(log.Entries[0].Message, "one two three")
-	fields := log.Entries[0].Fields
+	entries := log.Entries()
+	is.Equal(len(entries), 1)
+	is.Equal(entries[0].Level.String(), "error")
+	is.Equal(entries[0].Message, "one two three")
+	fields := entries[0].Fields
 	is.Equal(len(fields), 0)
 }
 
@@ -59,16 +61,17 @@ func TestSampleHandler(t *testing.T) {
 		"file":   "memory_test.go",
 		"detail": "file not exist",
 	}).Field("one", "two").Errorf("%d. oh noz", 1)
-	is.Equal(len(handler.Entries), 4)
-	is.Equal(handler.Entries[0].Level.String(), "info")
-	is.Equal(handler.Entries[0].Message, "hello")
-	is.Equal(handler.Entries[1].Level.String(), "info")
-	is.Equal(handler.Entries[1].Message, "world")
-	is.Equal(handler.Entries[2].Level.String(), "warn")
-	is.Equal(handler.Entries[2].Message, "hello mars!")
-	is.Equal(handler.Entries[3].Level.String(), "error")
-	is.Equal(handler.Entries[3].Message, "1. oh noz")
-	fields := handler.Entries[3].Fields
+	entries := handler.Entries()
+	is.Equal(len(entries), 4)
+	is.Equal(entries[0].Level.String(), "info")
+	is.Equal(entries[0].Message, "hello")
+	is.Equal(entries[1].Level.String(), "info")
+	is.Equal(entries[1].Message, "world")
+	is.Equal(entries[2].Level.String(), "warn")
+	is.Equal(entries[2].Message, "hello mars!")
+	is.Equal(entries[3].Level.String(), "error")
+	is.Equal(entries[3].Message, "1. oh noz")
+	fields := entries[3].Fields
 	is.Equal(len(fields), 3)
 	is.Equal(fields.Keys()[0], "detail")
 	is.Equal(fields.Get(fields.Keys()[0]), "file not exist")
@@ -83,9 +86,10 @@ func TestErrHandler(t *testing.T) {
 	handler := log.Buffer()
 	log := log.New(handler)
 	log.Error(errors.New("one"), "two", "three")
-	is.Equal(len(handler.Entries), 1)
-	is.Equal(handler.Entries[0].Level.String(), "error")
-	is.Equal(handler.Entries[0].Message, "one two three")
-	fields := handler.Entries[0].Fields
+	entries := handler.Entries()
+	is.Equal(len(entries), 1)
+	is.Equal(entries[0].Level.String(), "error")
+	is.Equal(entries[0].Message, "one two three")
+	fields := entries[0].Fields
 	is.Equal(len(fields), 0)
 }

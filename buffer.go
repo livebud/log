@@ -5,81 +5,90 @@ import (
 	"sync"
 )
 
-func Buffer() *Buffered {
-	return &Buffered{}
+func Buffer() *buffer {
+	return &buffer{}
 }
 
-type Buffered struct {
+type buffer struct {
 	mu      sync.Mutex
-	Entries []*Entry
+	entries []*Entry
 }
 
-var _ Handler = (*Buffered)(nil)
-var _ Log = (*Buffered)(nil)
+var _ Handler = (*buffer)(nil)
+var _ Log = (*buffer)(nil)
 
-func (h *Buffered) Log(entry *Entry) error {
-	h.Entries = append(h.Entries, entry)
+func (h *buffer) Log(entry *Entry) error {
+	h.entries = append(h.entries, entry)
 	return nil
 }
 
-func (b *Buffered) Field(key string, value interface{}) Log {
+// Entries returns a copy of the entries in the buffer
+func (b *buffer) Entries() []*Entry {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	entries := make([]*Entry, len(b.entries))
+	copy(entries, b.entries)
+	return entries
+}
+
+func (b *buffer) Field(key string, value interface{}) Log {
 	return &sublogger{b, Fields{key: value}}
 }
 
-func (b *Buffered) Fields(fields map[string]interface{}) Log {
+func (b *buffer) Fields(fields map[string]interface{}) Log {
 	return &sublogger{b, fields}
 }
 
-func (b *Buffered) log(lvl Level, args []interface{}, fields Fields) error {
+func (b *buffer) log(lvl Level, args []interface{}, fields Fields) error {
 	b.mu.Lock()
-	b.Entries = append(b.Entries, createEntry(lvl, sprint(args...), fields))
+	b.entries = append(b.entries, createEntry(lvl, sprint(args...), fields))
 	b.mu.Unlock()
 	return nil
 }
 
-func (b *Buffered) logf(lvl Level, msg string, args []interface{}, fields Fields) error {
+func (b *buffer) logf(lvl Level, msg string, args []interface{}, fields Fields) error {
 	b.mu.Lock()
-	b.Entries = append(b.Entries, createEntry(lvl, fmt.Sprintf(msg, args...), fields))
+	b.entries = append(b.entries, createEntry(lvl, fmt.Sprintf(msg, args...), fields))
 	b.mu.Unlock()
 	return nil
 }
 
-func (b *Buffered) Debug(args ...interface{}) error {
+func (b *buffer) Debug(args ...interface{}) error {
 	return b.log(LevelDebug, args, nil)
 }
 
-func (b *Buffered) Debugf(msg string, args ...interface{}) error {
+func (b *buffer) Debugf(msg string, args ...interface{}) error {
 	return b.logf(LevelDebug, msg, args, nil)
 }
 
-func (b *Buffered) Info(args ...interface{}) error {
+func (b *buffer) Info(args ...interface{}) error {
 	return b.log(LevelInfo, args, nil)
 }
 
-func (b *Buffered) Infof(msg string, args ...interface{}) error {
+func (b *buffer) Infof(msg string, args ...interface{}) error {
 	return b.logf(LevelInfo, msg, args, nil)
 }
 
-func (b *Buffered) Notice(args ...interface{}) error {
+func (b *buffer) Notice(args ...interface{}) error {
 	return b.log(LevelNotice, args, nil)
 }
 
-func (b *Buffered) Noticef(msg string, args ...interface{}) error {
+func (b *buffer) Noticef(msg string, args ...interface{}) error {
 	return b.logf(LevelNotice, msg, args, nil)
 }
 
-func (b *Buffered) Warn(args ...interface{}) error {
+func (b *buffer) Warn(args ...interface{}) error {
 	return b.log(LevelWarn, args, nil)
 }
 
-func (b *Buffered) Warnf(msg string, args ...interface{}) error {
+func (b *buffer) Warnf(msg string, args ...interface{}) error {
 	return b.logf(LevelWarn, msg, args, nil)
 }
 
-func (b *Buffered) Error(args ...interface{}) error {
+func (b *buffer) Error(args ...interface{}) error {
 	return b.log(LevelError, args, nil)
 }
 
-func (b *Buffered) Errorf(msg string, args ...interface{}) error {
+func (b *buffer) Errorf(msg string, args ...interface{}) error {
 	return b.logf(LevelError, msg, args, nil)
 }
