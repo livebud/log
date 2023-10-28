@@ -15,10 +15,8 @@ func TestMiddleware(t *testing.T) {
 	is := is.New(t)
 	buffer := log.Buffer()
 	logger := log.New(buffer)
-	middleware := logger.Middleware()
-	handler := middleware.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log, err := log.FromContext(r.Context())
-		is.NoErr(err)
+	handler := logger.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log := log.From(r.Context())
 		log.Field("cool", "story").Info("hello")
 		time.Sleep(100 * time.Millisecond)
 		w.Write([]byte("hello world"))

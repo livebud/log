@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/felixge/httpsnoop"
-	"github.com/segmentio/ksuid"
 )
 
 // ErrNotInContext is returned when a log is not in the context
@@ -16,40 +15,26 @@ type contextKey string
 
 const logKey contextKey = "log"
 
-// FromContext gets the log from the context
-func FromContext(ctx context.Context) (Log, error) {
+// From gets the log from the context. If the logger isn't in the middleware,
+// we warn and discards the logs
+func From(ctx context.Context) Log {
 	log, ok := ctx.Value(logKey).(Log)
 	if !ok {
-		return nil, ErrNotInContext
+		Warn("log: not in context, discarding logs")
+		return Discard()
 	}
-	return log, nil
+	return log
 }
 
-// Middleware logging for an HTTP handler
-func (l *Logger) Middleware() *Middleware {
-	return &Middleware{
-		Log: l,
-		// RequestId is a function for generating a unique request id
-		RequestId: func() string {
-			return ksuid.New().String()
-		},
-	}
-}
-
-type Middleware struct {
-	Log       Log
-	RequestId func() string
-}
-
-func (m *Middleware) Middleware(next http.Handler) http.Handler {
+func (l *Logger) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Support an existing request id
 		requestId := r.Header.Get("X-Request-Id")
 		if requestId == "" {
-			requestId = m.RequestId()
+			requestId = l.requestId()
 			r.Header.Set("X-Request-Id", requestId)
 		}
-		log := m.Log.Fields(Fields{
+		log := l.Fields(Fields{
 			"url":         r.RequestURI,
 			"method":      r.Method,
 			"remote_addr": r.RemoteAddr,

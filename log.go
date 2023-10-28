@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"sort"
 	"time"
+
+	"github.com/segmentio/ksuid"
 )
 
 type Fields map[string]interface{}
@@ -78,13 +80,20 @@ type Handler interface {
 	Log(log *Entry) error
 }
 
+// RequestId is a function for generating a unique request id
+// TODO: make this configurable
+func requestId() string {
+	return ksuid.New().String()
+}
+
 // New logger
 func New(handler Handler) *Logger {
-	return &Logger{handler}
+	return &Logger{handler, requestId}
 }
 
 type Logger struct {
-	Handler Handler
+	handler   Handler
+	requestId func() string
 }
 
 var _ Log = (*Logger)(nil)
@@ -159,11 +168,11 @@ func sprint(args ...interface{}) string {
 }
 
 func (l *Logger) log(level Level, args []interface{}, fields Fields) error {
-	return l.Handler.Log(createEntry(level, sprint(args...), fields))
+	return l.handler.Log(createEntry(level, sprint(args...), fields))
 }
 
 func (l *Logger) logf(level Level, format string, args []interface{}, fields Fields) error {
-	return l.Handler.Log(createEntry(level, fmt.Sprintf(format, args...), fields))
+	return l.handler.Log(createEntry(level, fmt.Sprintf(format, args...), fields))
 }
 
 type logger interface {
