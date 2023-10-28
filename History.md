@@ -1,3 +1,8 @@
+# 0.0.6 / 2023-10-28
+
+- add middleware and request-id support.
+- update buffer handler to return entries from a function
+
 # 0.0.5 / 2023-10-04
 
 - change signature on discard logger to be a function
