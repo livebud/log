@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/felixge/httpsnoop"
+	"github.com/segmentio/ksuid"
 )
 
 // ErrNotInContext is returned when a log is not in the context
@@ -17,28 +18,61 @@ const logKey contextKey = "log"
 
 // From gets the log from the context. If the logger isn't in the middleware,
 // we warn and discards the logs
-func From(ctx context.Context) Log {
+func From(ctx context.Context) (Log, error) {
 	log, ok := ctx.Value(logKey).(Log)
 	if !ok {
-		Warn("log: not in context, discarding logs")
-		return Discard()
+		return nil, ErrNotInContext
+	}
+	return log, nil
+}
+
+// MustFrom gets the log from the context or panics
+func MustFrom(ctx context.Context) Log {
+	log, err := From(ctx)
+	if err != nil {
+		panic(err)
 	}
 	return log
 }
 
-func (l *Logger) Middleware(next http.Handler) http.Handler {
+// WithRequestId sets the request id function for generating a unique request id
+// for each request
+func WithRequestId(fn func(r *http.Request) string) func(*middlewareOption) {
+	return func(opts *middlewareOption) {
+		opts.requestId = fn
+	}
+}
+
+type middlewareOption struct {
+	requestId func(r *http.Request) string
+}
+
+// RequestId is a function for generating a unique request id
+func defaultRequestId(r *http.Request) string {
+	// Support an existing request id
+	requestId := r.Header.Get("X-Request-Id")
+	if requestId == "" {
+		requestId = ksuid.New().String()
+		// Set just in case we use it later
+		r.Header.Set("X-Request-Id", requestId)
+	}
+	return requestId
+}
+
+// Middleware uses the logger to log requests and responses
+func Middleware(log Log, next http.Handler, options ...func(*middlewareOption)) http.Handler {
+	opts := &middlewareOption{
+		requestId: defaultRequestId,
+	}
+	for _, option := range options {
+		option(opts)
+	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Support an existing request id
-		requestId := r.Header.Get("X-Request-Id")
-		if requestId == "" {
-			requestId = l.requestId()
-			r.Header.Set("X-Request-Id", requestId)
-		}
-		log := l.Fields(Fields{
+		log := log.Fields(Fields{
 			"url":         r.RequestURI,
 			"method":      r.Method,
 			"remote_addr": r.RemoteAddr,
-			"request_id":  requestId,
+			"request_id":  opts.requestId(r),
 		})
 		ctx := context.WithValue(r.Context(), logKey, log)
 		r = r.WithContext(ctx)

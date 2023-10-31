@@ -1,7 +1,6 @@
 package log_test
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -14,9 +13,9 @@ import (
 func TestMiddleware(t *testing.T) {
 	is := is.New(t)
 	buffer := log.Buffer()
-	logger := log.New(buffer)
-	handler := logger.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log := log.From(r.Context())
+	handler := log.Middleware(log.New(buffer), http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log, err := log.From(r.Context())
+		is.NoErr(err)
 		log.Field("cool", "story").Info("hello")
 		time.Sleep(100 * time.Millisecond)
 		w.Write([]byte("hello world"))
@@ -54,5 +53,39 @@ func TestMiddleware(t *testing.T) {
 	is.Equal(fields.Get("status"), 200)
 	is.Equal(fields.Get("size"), int64(11))
 	is.True(fields.Get("duration").(int64) > 0)
-	fmt.Println(fields.Get("duration"))
+}
+
+func TestCustomRequestID(t *testing.T) {
+	is := is.New(t)
+	buffer := log.Buffer()
+	inner := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log, err := log.From(r.Context())
+		is.NoErr(err)
+		log.Field("cool", "story").Info("hello")
+		time.Sleep(100 * time.Millisecond)
+		w.Write([]byte("hello world"))
+	})
+	requestId := log.WithRequestId(func(*http.Request) string {
+		return "custom-request-id"
+	})
+	handler := log.Middleware(log.New(buffer), inner, requestId)
+	req := httptest.NewRequest("GET", "http://livebud.com/docs", nil)
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+	is.Equal(rec.Code, http.StatusOK)
+	is.Equal(rec.Body.String(), "hello world")
+	entries := buffer.Entries()
+	is.Equal(len(entries), 3)
+	is.Equal(entries[0].Message, "request")
+	fields := entries[0].Fields
+	is.Equal(len(fields), 4)
+	is.Equal(fields.Get("request_id"), "custom-request-id")
+	is.Equal(entries[1].Message, "hello")
+	fields = entries[1].Fields
+	is.Equal(len(fields), 5)
+	is.Equal(fields.Get("request_id"), "custom-request-id")
+	is.Equal(entries[2].Message, "response")
+	fields = entries[2].Fields
+	is.Equal(len(fields), 7)
+	is.Equal(fields.Get("request_id"), "custom-request-id")
 }
