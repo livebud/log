@@ -1,3 +1,7 @@
+# 0.0.7 / 2023-10-31
+
+- improve log.Middleware ergonomics
+
 # 0.0.6 / 2023-10-28
 
 - add middleware and request-id support.
