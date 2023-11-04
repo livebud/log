@@ -4,7 +4,15 @@ github.com/go-logfmt/logfmt v0.6.0 h1:wGYYu3uicYdqXVgoYbvnkrPVXkuLM1p1ifugDMEdRi
 github.com/go-logfmt/logfmt v0.6.0/go.mod h1:WYhtIu8zTZfxdn5+rREduYbwxfcBr/Vr6KEVveWlfTs=
 github.com/livebud/color v0.0.1 h1:Be1+UeNjs0GdkegoZcXd9XKiJDdru5X/ZpwtH/9hnpk=
 github.com/livebud/color v0.0.1/go.mod h1:IBCW2CsRUnRuN9L42Vy9SkksJdhcnISoS+hOxa20VkU=
+github.com/livebud/middleware v0.0.2 h1:0OrSKs77Ncll2rtAZnT8+y0aeEZVKRKQr38KEjjUPQY=
+github.com/livebud/middleware v0.0.2/go.mod h1:EF4MEAbzsn+YI3TmaUxWdmn56m2BcT8fpS+h/B/6zDg=
+github.com/livebud/mux v0.0.9 h1:IaRUmljTW2aidfsQsqb8zsVbanpVD87uB0njMyz0MYE=
+github.com/livebud/mux v0.0.9/go.mod h1:kw58uRjbOTY45qcJ8QVZPTSdiqKi3yzqM07TSgtiEUg=
+github.com/livebud/slot v0.0.1 h1:qbpHJeb2wGtqE+8FHbQrsxT3Vk3EZn2tNTTk5Uz7z2c=
+github.com/livebud/slot v0.0.1/go.mod h1:C2E8iaruXEmxSpKaKnJnJLl8EUgcZmwlDRQdWtTSWAE=
 github.com/matryer/is v1.4.1 h1:55ehd8zaGABKLXQUe2awZ99BD/PTc2ls+KV/dXphgEQ=
 github.com/matryer/is v1.4.1/go.mod h1:8I/i5uYgLzgsgEloJE1U6xx5HkBQpAZvepWuujKwMRU=
 github.com/segmentio/ksuid v1.0.4 h1:sBo2BdShXjmcugAMwjugoGUdUV0pcxY5mW4xKRn3v4c=
 github.com/segmentio/ksuid v1.0.4/go.mod h1:/XUiZBD3kVx5SmUOl55voK5yeAbBNNIed+2O73XgrPE=
+golang.org/x/sync v0.4.0 h1:zxkM55ReGkDlKSM+Fu41A+zmbZuaPVbGMzvvdUPznYQ=
+golang.org/x/sync v0.4.0/go.mod h1:FU7BRWz2tNW+3quACPkgCx/L+uEAv1htQ0V83Z9Rj+Y=

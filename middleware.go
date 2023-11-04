@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/felixge/httpsnoop"
+	"github.com/livebud/middleware"
 	"github.com/segmentio/ksuid"
 )
 
@@ -60,36 +61,38 @@ func defaultRequestId(r *http.Request) string {
 }
 
 // Middleware uses the logger to log requests and responses
-func Middleware(log Log, next http.Handler, options ...func(*middlewareOption)) http.Handler {
+func Middleware(log Log, options ...func(*middlewareOption)) middleware.Middleware {
 	opts := &middlewareOption{
 		requestId: defaultRequestId,
 	}
 	for _, option := range options {
 		option(opts)
 	}
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log := log.Fields(Fields{
-			"url":         r.RequestURI,
-			"method":      r.Method,
-			"remote_addr": r.RemoteAddr,
-			"request_id":  opts.requestId(r),
+	return middleware.Func(func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			log := log.Fields(Fields{
+				"url":         r.RequestURI,
+				"method":      r.Method,
+				"remote_addr": r.RemoteAddr,
+				"request_id":  opts.requestId(r),
+			})
+			ctx := context.WithValue(r.Context(), logKey, log)
+			r = r.WithContext(ctx)
+			log.Info("request")
+			res := httpsnoop.CaptureMetrics(next, w, r)
+			log = log.Fields(Fields{
+				"status":   res.Code,
+				"duration": res.Duration.Milliseconds(),
+				"size":     res.Written,
+			})
+			switch {
+			case res.Code >= 500:
+				log.Error("response")
+			case res.Code >= 400:
+				log.Warn("response")
+			default:
+				log.Info("response")
+			}
 		})
-		ctx := context.WithValue(r.Context(), logKey, log)
-		r = r.WithContext(ctx)
-		log.Info("request")
-		res := httpsnoop.CaptureMetrics(next, w, r)
-		log = log.Fields(Fields{
-			"status":   res.Code,
-			"duration": res.Duration.Milliseconds(),
-			"size":     res.Written,
-		})
-		switch {
-		case res.Code >= 500:
-			log.Error("response")
-		case res.Code >= 400:
-			log.Warn("response")
-		default:
-			log.Info("response")
-		}
 	})
 }
