@@ -4,6 +4,8 @@
 
 Simple logger for Go.
 
+⚠️ Deprecated in favor of: https://github.com/matthewmueller/logs.
+
 ![log](https://user-images.githubusercontent.com/170299/272141127-b7357640-0418-4739-9b4f-199662da4a1e.png)
 
 ## Features
